@@ -6,11 +6,12 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///site.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-class TestingConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///testing.db'
+# class TestingConfig(Config):
+#     TESTING = True
+#     SQLALCHEMY_DATABASE_URI = 'sqlite:///testing.db'
 
-class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'postgresql://user:password@localhost/production_db'
+# class ProductionConfig(Config):
+#     SQLALCHEMY_DATABASE_URI = 'postgresql://user:password@localhost/production_db'

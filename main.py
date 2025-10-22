@@ -2,9 +2,10 @@ from flask import Flask, render_template, request, flash
 from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from config import DevelopmentConfig, ProductionConfig, TestingConfig
 
 app = Flask(__name__)
-app.debug = True
+app.config.from_object(DevelopmentConfig)
 app.secret_key = 'your_secret_key'  # Required for CSRF protection
 csrf = CSRFProtect(app)  # Enable CSRF Protection
 

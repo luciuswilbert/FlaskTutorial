@@ -1,82 +1,45 @@
-from flask import Flask, request, redirect
-from flask.templating import render_template
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request
+import sqlite3
 
 app = Flask(__name__)
-app.debug = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Avoids a warning
 
-db = SQLAlchemy(app)
-
-# Model
-class Profile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(20), unique=False, nullable=False)
-    last_name = db.Column(db.String(20), unique=False, nullable=False)
-    age = db.Column(db.Integer, nullable=False)
-
-    # repr method represents how one object of this datatable
-    # will look like
-    def __repr__(self):
-        return f"Name : {self.first_name}, Age: {self.age}"
-
-from flask import Flask, request, redirect
-from flask.templating import render_template
-from flask_sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-app.debug = True
-
-# adding configuration for using a sqlite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-
-# Creating an SQLAlchemy instance
-db = SQLAlchemy(app)
-
-# Models
-class Profile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(20), unique=False, nullable=False)
-    last_name = db.Column(db.String(20), unique=False, nullable=False)
-    age = db.Column(db.Integer, nullable=False)
-
-    def __repr__(self):
-        return f"Name : {self.first_name}, Age: {self.age}"
-
-# function to render index page
 @app.route('/')
+@app.route('/home')
 def index():
-    profiles = Profile.query.all()
-    return render_template('index.html', profiles=profiles)
+    return render_template('index.html')
 
-@app.route('/add_data')
-def add_data():
-    return render_template('add_profile.html')
+connect = sqlite3.connect('database.db')
+connect.execute(
+    'CREATE TABLE IF NOT EXISTS PARTICIPANTS (name TEXT, \
+    email TEXT, city TEXT, country TEXT, phone TEXT)')
 
-# function to add profiles
-@app.route('/add', methods=["POST"])
-def profile():
-    first_name = request.form.get("first_name")
-    last_name = request.form.get("last_name")
-    age = request.form.get("age")
-
-    if first_name != '' and last_name != '' and age is not None:
-        p = Profile(first_name=first_name, last_name=last_name, age=age)
-        db.session.add(p)
-        db.session.commit()
-        return redirect('/')
+@app.route('/join', methods=['GET', 'POST'])
+def join():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        city = request.form['city']
+        country = request.form['country']
+        phone = request.form['phone']
+        with sqlite3.connect("database.db") as users:
+            cursor = users.cursor()
+            cursor.execute("INSERT INTO PARTICIPANTS \
+            (name,email,city,country,phone) VALUES (?,?,?,?,?)",
+                           (name, email, city, country, phone))
+            users.commit()
+        return render_template("index.html")
     else:
-        return redirect('/')
+        return render_template('join.html')
 
-@app.route('/delete/<int:id>')
-def erase(id): 
-    data = Profile.query.get(id)
-    db.session.delete(data)
-    db.session.commit()
-    return redirect('/')
+@app.route('/participants')
+def participants():
+    connect = sqlite3.connect('database.db')
+    cursor = connect.cursor()
+    cursor.execute('SELECT * FROM PARTICIPANTS')
+
+    data = cursor.fetchall()
+    return render_template("participants.html", data=data)
+
 
 if __name__ == '__main__':
-    with app.app_context():  # Needed for DB operations outside a request
-        db.create_all()      # Creates the database and tables
-    app.run(debug=True)
+    app.run(debug=False)

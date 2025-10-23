@@ -1,3 +1,4 @@
 flask
 flask-WTF
 flask-SQLAlchemy
+db-sqlite3

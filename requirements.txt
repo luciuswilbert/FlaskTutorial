@@ -7,3 +7,5 @@ werkzeug
 flask-security
 email-validator
 flask-session
+PyJWT
+flask-marshmallow
